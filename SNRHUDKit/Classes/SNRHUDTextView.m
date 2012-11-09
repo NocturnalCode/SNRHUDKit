@@ -43,7 +43,7 @@
     [self setFont:SNRTextViewFont];
     [self setTextContainerInset:SNRTextViewTextContainerInset];
     NSMutableDictionary *dict = [[self selectedTextAttributes] mutableCopy];	
-    [dict setObject:SNRTextViewSelectedTextBackgroundColor forKey:NSBackgroundColorAttributeName];
+    dict[NSBackgroundColorAttributeName] = SNRTextViewSelectedTextBackgroundColor;
     [self setSelectedTextAttributes:dict];
 }
 

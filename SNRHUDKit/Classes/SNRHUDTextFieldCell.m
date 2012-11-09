@@ -50,7 +50,7 @@
     [fieldEditor setTextColor:textColor];
     [fieldEditor setDrawsBackground:NO];
     NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:[fieldEditor selectedTextAttributes]];
-    [attributes setObject:SNRTextFieldSelectedTextBackgroundColor forKey:NSBackgroundColorAttributeName];
+    attributes[NSBackgroundColorAttributeName] = SNRTextFieldSelectedTextBackgroundColor;
     [fieldEditor setSelectedTextAttributes:attributes];
     return fieldEditor;
 }
@@ -60,17 +60,21 @@
     if (![self isEnabled]) {
         CGContextSetAlpha([[NSGraphicsContext currentContext] graphicsPort], SNRTextFieldDisabledAlpha);
     }
+    
     NSRect backgroundRect = cellFrame;
     backgroundRect.size.height -= 1.f;
     
     NSBezierPath *backgroundPath = [NSBezierPath bezierPathWithRect:backgroundRect];
     
-    if ([self drawsBackground]) {
+    if(self.drawsBackground)
+    {
         [SNRTextFieldBackgroundColor set];
         [backgroundPath fill];
     }
     
-    if ([self isBezeled]) {
+    if(self.isBezeled)
+    {
+        
         NSShadow *innerGlow = [NSShadow new];
         [innerGlow setShadowColor:SNRTextFieldInnerGlowColor];
         [innerGlow setShadowOffset:SNRTextFieldInnerGlowOffset];
@@ -95,4 +99,5 @@
     NSRect textRect = NSMakeRect(backgroundRect.origin.x, round(NSMidY(backgroundRect) - (textSize.height / 2.f)) - SNRTextFieldTextVerticalOffset, backgroundRect.size.width, textSize.height);
     [self drawInteriorWithFrame:textRect inView:controlView];
 }
+
 @end
