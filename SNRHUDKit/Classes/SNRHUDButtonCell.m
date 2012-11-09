@@ -100,10 +100,34 @@ static NSString* const SNRButtonReturnKeyEquivalent = @"\r";
     }
 }
 
+
+- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
+{
+    if(self.bezelStyle == NSDisclosureBezelStyle)
+    {
+        [self snr_drawDisclosureWithFrame:cellFrame inView:controlView];
+    }
+    else
+    {
+        [super drawInteriorWithFrame:cellFrame inView:controlView];
+    }
+}
+
 - (void)drawImage:(NSImage *)image withFrame:(NSRect)frame inView:(NSView *)controlView
 {
-    if (__buttonType == NSSwitchButton) {
+    if (__buttonType == NSSwitchButton)
+    {
         [self snr_drawCheckboxBezelWithFrame:frame inView:controlView];
+    }
+    else if ([image isTemplate])
+    {
+        [super drawImage:image withFrame:frame inView:controlView];
+    }
+    else
+    {
+        NSRect imageBounds = NSZeroRect;
+        imageBounds.size = image.size;
+        [image drawInRect:frame fromRect:imageBounds operation:NSCompositeSourceOver fraction:1.0];
     }
 }
 
@@ -138,6 +162,54 @@ static NSString* const SNRButtonReturnKeyEquivalent = @"\r";
     [blue ? SNRButtonBlueHighlightColor : SNRButtonBlackHighlightColor set];
     [highlightPath stroke];
     [NSGraphicsContext restoreGraphicsState];
+}
+
+- (void)snr_drawDisclosureWithFrame:(NSRect)frame inView:(NSView*)controlView
+{
+    
+    
+    //// Frames
+    //NSRect frame = NSMakeRect(69, 86, 19, 24);
+    
+    //// Subframes
+    NSRect mixedStateFrame = NSMakeRect(NSMinX(frame) + floor((NSWidth(frame) - 9) * 0.50000 + 0.5), NSMinY(frame) + floor((NSHeight(frame) - 10) * 0.50000 + 0.5), 9, 10);
+    NSRect offStateFrame = NSMakeRect(NSMinX(mixedStateFrame) + 1, NSMinY(mixedStateFrame), 8, 9);
+    NSRect onStateFrame = NSMakeRect(NSMinX(mixedStateFrame), NSMinY(mixedStateFrame) + 1, 9, 8);
+    
+    [SNRButtonTextColor setFill];
+    
+    if (self.state == NSOffState) {
+        //// OffState Drawing
+        NSBezierPath* offStatePath = [NSBezierPath bezierPath];
+        [offStatePath moveToPoint: NSMakePoint(NSMinX(offStateFrame), NSMinY(offStateFrame))];
+        [offStatePath lineToPoint: NSMakePoint(NSMinX(onStateFrame) + 9, NSMinY(onStateFrame) + 3.5)];
+        [offStatePath lineToPoint: NSMakePoint(NSMinX(onStateFrame) + 1, NSMinY(onStateFrame) + 8)];
+        [offStatePath lineToPoint: NSMakePoint(NSMinX(offStateFrame), NSMinY(offStateFrame))];
+        [offStatePath closePath];
+        [offStatePath fill];
+    }
+    else if (self.state == NSMixedState)
+    {
+        //// MixedState Drawing
+        NSBezierPath* mixedStatePath = [NSBezierPath bezierPath];
+        [mixedStatePath moveToPoint: NSMakePoint(NSMinX(offStateFrame) + 5.5, NSMinY(offStateFrame) + 0.5)];
+        [mixedStatePath lineToPoint: NSMakePoint(NSMinX(mixedStateFrame) + 8.5, NSMinY(mixedStateFrame) + 9.5)];
+        [mixedStatePath lineToPoint: NSMakePoint(NSMinX(onStateFrame), NSMinY(onStateFrame) + 6)];
+        [mixedStatePath lineToPoint: NSMakePoint(NSMinX(offStateFrame) + 5.5, NSMinY(offStateFrame) + 0.5)];
+        [mixedStatePath closePath];
+        [mixedStatePath fill];
+    }
+    else if (self.state == NSOnState)
+    {
+        //// OnState Drawing
+        NSBezierPath* onStatePath = [NSBezierPath bezierPath];
+        [onStatePath moveToPoint: NSMakePoint(NSMinX(onStateFrame), NSMinY(onStateFrame))];
+        [onStatePath lineToPoint: NSMakePoint(NSMinX(onStateFrame) + 9, NSMinY(onStateFrame))];
+        [onStatePath lineToPoint: NSMakePoint(NSMinX(onStateFrame) + 4.5, NSMinY(onStateFrame) + 8)];
+        [onStatePath lineToPoint: NSMakePoint(NSMinX(onStateFrame), NSMinY(onStateFrame))];
+        [onStatePath closePath];
+        [onStatePath fill];
+    }
 }
 
 - (void)snr_drawCheckboxBezelWithFrame:(NSRect)frame inView:(NSView*)controlView
@@ -188,7 +260,7 @@ static NSString* const SNRButtonReturnKeyEquivalent = @"\r";
     [textShadow setShadowOffset:blue ? SNRButtonBlueTextShadowOffset : SNRButtonBlackTextShadowOffset];
     [textShadow setShadowColor:blue ? SNRButtonBlueTextShadowColor : SNRButtonBlackTextShadowColor];
     [textShadow setShadowBlurRadius:blue ? SNRButtonBlueTextShadowBlurRadius : SNRButtonBlackTextShadowBlurRadius];
-    NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:SNRButtonTextFont, NSFontAttributeName, SNRButtonTextColor, NSForegroundColorAttributeName, textShadow, NSShadowAttributeName, nil];
+    NSDictionary *attributes = @{NSFontAttributeName: SNRButtonTextFont, NSForegroundColorAttributeName: SNRButtonTextColor, NSShadowAttributeName: textShadow};
     NSAttributedString *attrLabel = [[NSAttributedString alloc] initWithString:label attributes:attributes];
     NSSize labelSize = attrLabel.size;
     NSRect labelRect = NSMakeRect(NSMidX(frame) - (labelSize.width / 2.f), NSMidY(frame) - (labelSize.height / 2.f), labelSize.width, labelSize.height);
@@ -203,7 +275,7 @@ static NSString* const SNRButtonReturnKeyEquivalent = @"\r";
     [textShadow setShadowOffset:SNRButtonBlackTextShadowOffset];
     [textShadow setShadowColor:SNRButtonBlackTextShadowColor];
     [textShadow setShadowBlurRadius:SNRButtonBlackTextShadowBlurRadius];
-    NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:SNRButtonTextFont, NSFontAttributeName, SNRButtonTextColor, NSForegroundColorAttributeName, textShadow, NSShadowAttributeName, nil];
+    NSDictionary *attributes = @{NSFontAttributeName: SNRButtonTextFont, NSForegroundColorAttributeName: SNRButtonTextColor, NSShadowAttributeName: textShadow};
     NSAttributedString *attrLabel = [[NSAttributedString alloc] initWithString:label attributes:attributes];
     NSSize labelSize = attrLabel.size;
     NSRect labelRect = NSMakeRect(frame.origin.x + SNRButtonCheckboxTextOffset, NSMidY(frame) - (labelSize.height / 2.f), labelSize.width, labelSize.height);
